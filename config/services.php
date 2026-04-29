@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'aaas' => [
+        'url' => env('AAAS_URL', 'http://localhost:3001'),
+    ],
+
 ];
