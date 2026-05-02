@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use Illuminate\Http\Request;
 
 class AuthHelper
 {

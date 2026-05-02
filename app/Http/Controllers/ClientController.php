@@ -26,7 +26,7 @@ class ClientController extends Controller
         return response()->json([
             'success' => true,
             'data'    => new ClientCollection($clients),
-            'message' => 'Clients récupérés avec succès.',
+            'message' => 'Customers successfully recovered.',
             'errors'  => [],
         ]);
     }
@@ -38,7 +38,7 @@ class ClientController extends Controller
         return response()->json([
             'success' => true,
             'data'    => new ClientResource($client),
-            'message' => 'Client récupéré avec succès.',
+            'message' => 'Customer successfully retrieved.',
             'errors'  => [],
         ]);
     }
@@ -50,7 +50,7 @@ class ClientController extends Controller
         return response()->json([
             'success' => true,
             'data'    => new ClientResource($client),
-            'message' => 'Client créé avec succès.',
+            'message' => 'Customer created successfully.',
             'errors'  => [],
         ], Response::HTTP_CREATED);
     }
@@ -62,7 +62,7 @@ class ClientController extends Controller
         return response()->json([
             'success' => true,
             'data'    => new ClientResource($client),
-            'message' => 'Client mis à jour avec succès.',
+            'message' => 'Customer updated successfully.',
             'errors'  => [],
         ]);
     }
@@ -74,7 +74,7 @@ class ClientController extends Controller
         return response()->json([
             'success' => true,
             'data'    => null,
-            'message' => 'Client supprimé avec succès.',
+            'message' => 'Customer deleted successfully.',
             'errors'  => [],
         ]);
     }

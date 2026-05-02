@@ -37,6 +37,7 @@ return [
 
     'aaas' => [
         'url' => env('AAAS_URL', 'http://localhost:3001'),
+        'api_key' => env('X_API_KEY', 'test_api_key'),
     ],
 
 ];
