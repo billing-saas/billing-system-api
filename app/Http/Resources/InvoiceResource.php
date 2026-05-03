@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
@@ -22,6 +23,8 @@ class InvoiceResource extends JsonResource
             'currency'       => $this->currency,
             'notes'          => $this->notes,
             'terms'          => $this->terms,
+            'stripe_payment_url'       => $this->stripe_payment_url,
+            'stripe_payment_intent_id' => $this->stripe_payment_intent_id,
             'client'         => new ClientResource($this->whenLoaded('client')),
             'items'          => InvoiceItemResource::collection(
                 $this->whenLoaded('items')

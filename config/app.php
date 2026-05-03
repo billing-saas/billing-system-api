@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    // Fontend URL (used in emails, notifications, etc.)
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
 ];
