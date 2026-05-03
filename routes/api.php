@@ -22,4 +22,5 @@ Route::middleware('auth.jwt')->group(function () {
     Route::apiResource('invoices',      InvoiceController::class);
     Route::post('invoices/{id}/send',   [InvoiceController::class, 'send']);
     Route::post('invoices/{id}/pay',    [InvoiceController::class, 'markAsPaid']);
+    Route::get('invoices/{id}/download',  [InvoiceController::class, 'download']);
 });
