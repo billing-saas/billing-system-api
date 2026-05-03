@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Helpers\AuthHelper;
+use App\Jobs\SendInvoiceEmailJob;
+use App\Jobs\SendPaidEmailJob;
 use App\Models\Invoice;
 use App\Repositories\InvoiceRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -104,7 +106,11 @@ class InvoiceService
             'stripe_payment_url'       => $session->url,
         ]);
 
-        return $this->invoiceRepository->updateStatus($invoice, 'sent');
+        $invoice = $this->invoiceRepository->updateStatus($invoice, 'sent');
+
+        SendInvoiceEmailJob::dispatch($invoice);
+
+        return $invoice;
     }
 
     public function markAsPaid(int $id): Invoice
@@ -133,8 +139,11 @@ class InvoiceService
         }
 
         $invoice->update(['paid_at' => now()]);
+        $invoice = $this->invoiceRepository->updateStatus($invoice, 'paid');
 
-        return $this->invoiceRepository->updateStatus($invoice, 'paid');
+        SendPaidEmailJob::dispatch($invoice);
+
+        return $invoice;
     }
 
     public function deleteInvoice(int $id): void
