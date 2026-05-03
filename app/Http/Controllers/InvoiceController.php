@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceCollection;
 use App\Http\Resources\InvoiceResource;
 use App\Services\InvoiceService;
+use App\Services\PdfService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
 class InvoiceController extends Controller
 {
     public function __construct(
-        private InvoiceService $invoiceService
+        private InvoiceService $invoiceService,
+        private PdfService $pdfService
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -108,6 +110,19 @@ class InvoiceController extends Controller
             'data'    => new InvoiceResource($invoice),
             'message' => 'Invoice marked as paid.',
             'errors'  => [],
+        ]);
+    }
+
+    public function download(int $id): \Illuminate\Http\Response
+    {
+        $invoice = $this->invoiceService->getInvoice($id);
+        $invoice->load(['client', 'items']);
+
+        $pdfContent = $this->pdfService->streamInvoicePdf($invoice);
+
+        return response($pdfContent, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$invoice->invoice_number}.pdf\"",
         ]);
     }
 }
