@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Helpers;
-
-
 class AuthHelper
 {
     public static function user(): ?array

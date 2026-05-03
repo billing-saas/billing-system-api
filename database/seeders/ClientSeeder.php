@@ -11,7 +11,7 @@ class ClientSeeder extends Seeder
     public function run(): void
     {
         Client::factory(10)->create([
-            'user_id' => '7360130f-57bc-4486-b9cb-421ef4e7562b',
+            'user_id' => 'cc1e6824-1853-47ca-a77d-1a3356fe4651',
         ]);
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\Response;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends BaseRequest
 {
     public function authorize(): bool
     {
