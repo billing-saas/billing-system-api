@@ -39,7 +39,6 @@ class StripeWebhookController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Traiter les événements
         match ($event->type) {
             'checkout.session.completed'  => $this->handleCheckoutCompleted($event),
             'payment_intent.payment_failed' => $this->handlePaymentFailed($event),
