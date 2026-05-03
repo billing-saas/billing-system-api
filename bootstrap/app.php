@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'api/v1/webhooks/stripe',
+        ]);
         $middleware->alias([
             'auth.jwt' => VerifyJwtToken::class
         ]);

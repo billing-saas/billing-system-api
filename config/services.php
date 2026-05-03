@@ -39,5 +39,11 @@ return [
         'url' => env('AAAS_URL', 'http://localhost:3001'),
         'api_key' => env('X_API_KEY', 'test_api_key'),
     ],
+    
+    'stripe' => [
+        'key'            => env('STRIPE_KEY'),
+        'secret'         => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
 
 ];

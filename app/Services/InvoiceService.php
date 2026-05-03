@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Helpers\AuthHelper;
@@ -11,7 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 class InvoiceService
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository
+        private InvoiceRepository $invoiceRepository,
+        private StripeService $stripeService
     ) {}
 
     public function listInvoices(array $filters = []): LengthAwarePaginator
@@ -91,6 +93,17 @@ class InvoiceService
             $this->forbidden('Only draft invoices can be sent.');
         }
 
+        $invoice->load(['client', 'items']);
+
+        // Créer la session Stripe
+        $session = $this->stripeService->createCheckoutSession($invoice);
+
+        // Stocker le lien de paiement sur la facture
+        $invoice->update([
+            'stripe_payment_intent_id' => $session->payment_intent,
+            'stripe_payment_url'       => $session->url,
+        ]);
+
         return $this->invoiceRepository->updateStatus($invoice, 'sent');
     }
 
@@ -100,6 +113,23 @@ class InvoiceService
 
         if ($invoice->isPaid()) {
             $this->forbidden('Invoice is already paid.');
+        }
+
+        $invoice->update(['paid_at' => now()]);
+
+        return $this->invoiceRepository->updateStatus($invoice, 'paid');
+    }
+
+    public function markAsPaidByWebhook(int $id): Invoice
+    {
+        $invoice = Invoice::find($id);
+
+        if (!$invoice) {
+            throw new \Exception("Invoice {$id} not found.");
+        }
+
+        if ($invoice->isPaid()) {
+            return $invoice;
         }
 
         $invoice->update(['paid_at' => now()]);
