@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -26,4 +27,5 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('invoices/{id}/send',   [InvoiceController::class, 'send']);
     Route::post('invoices/{id}/pay',    [InvoiceController::class, 'markAsPaid']);
     Route::get('invoices/{id}/download',  [InvoiceController::class, 'download']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 });
