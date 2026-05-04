@@ -8,6 +8,7 @@ class UserProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'email',
         'first_name',
         'last_name',
         'phone',
