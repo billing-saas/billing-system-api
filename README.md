@@ -1,96 +1,188 @@
-# Billing System API
+# billing-system-api
 
-A modern billing and invoicing backend built with Laravel.
+> Laravel REST API for the Facturo billing system — handles clients, invoices, PDF generation, Stripe payments, and automated email notifications.
 
-This API powers the billing platform with client management, invoice lifecycle handling, PDF generation, Stripe payments, email reminders, dashboard metrics, and external authentication.
+---
 
-## Stack
+## Tech Stack
 
-- Laravel
+- **PHP 8.5** / **Laravel 12**
+- **MySQL** — primary database
+- **mPDF** — PDF generation
+- **Stripe** — online payments
+- **Laravel Queues** — async email jobs
+- **Laravel Scheduler** — automated reminders
+- **[Auth as a Service](https://github.com/patrick-rakotoharilalao/auth-service-project)** — external JWT authentication
+
+---
+
+## Architecture
+
+```
+Routes → Middleware → FormRequest → Controller → Service → Repository → Model
+```
+
+Authentication is fully delegated to the external AaaS. Every protected route passes through a custom `VerifyJwtToken` middleware that calls the AaaS `/auth/verify` endpoint to validate the JWT.
+
+---
+
+## Prerequisites
+
+- PHP >= 8.2
+- Composer
 - MySQL
-- Stripe
-- Laravel Scheduler
-- Laravel Queue
+- [AaaS](https://github.com/patrick-rakotoharilalao/auth-service-project) running locally
+- Stripe account (test mode)
+- Mailtrap account (for email testing)
 
-## Authentication
+---
 
-Authentication is handled by an external Authentication-as-a-Service (AaaS).
+## Getting Started
 
-The API validates access tokens against the external auth service and retrieves user identity and permissions before granting access.
+```bash
+# Clone the repo
+git clone https://github.com/billing-saas/billing-system-api.git
+cd billing-system-api
 
-AaaS repository: https://github.com/patrick-rakotoharilalao/auth-service-project
+# Install dependencies
+composer install
 
-## Features
+# Copy environment file
+cp .env.example .env
 
-- Client management (CRUD)
-- Invoice management
-- Invoice status workflow (`draft`, `sent`, `paid`, `overdue`)
-- PDF invoice generation
-- Stripe Checkout payments
-- Stripe webhook reconciliation
-- Automated email reminders
-- Billing dashboard metrics
+# Generate application key
+php artisan key:generate
+
+# Run migrations and seeders
+php artisan migrate --seed
+
+# Start the server
+php artisan serve
+```
+
+---
 
 ## Environment Variables
 
-Add the following variables to your `.env` file in addition to Laravel's default configuration:
-
 ```env
-AAAS_URL=http://localhost:3001/api/v1
-X_API_KEY=
-
-STRIPE_KEY=
-STRIPE_SECRET=
-STRIPE_WEBHOOK_SECRET=
-
+APP_URL=http://localhost:8000
 FRONTEND_URL=http://localhost:3000
 
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=billing_system
+DB_USERNAME=root
+DB_PASSWORD=
+
+# AaaS — https://github.com/patrick-rakotoharilalao/auth-service-project
+AAAS_URL=http://localhost:3001/api/v1
+AAAS_API_KEY=your_aaas_api_key
+
+# Stripe
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Mail (Mailtrap for development)
 MAIL_MAILER=smtp
 MAIL_HOST=sandbox.smtp.mailtrap.io
 MAIL_PORT=2525
-MAIL_USERNAME=
-MAIL_PASSWORD=
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
 MAIL_FROM_ADDRESS=noreply@facturo.com
 MAIL_FROM_NAME="Facturo"
 
+# Queue
 QUEUE_CONNECTION=database
 ```
 
-## Installation
+---
+
+## API Endpoints
+
+### Auth (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/auth/register` | Register a new user |
+
+### Clients
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/clients` | List clients (paginated) |
+| `POST` | `/api/v1/clients` | Create a client |
+| `GET` | `/api/v1/clients/{id}` | Get a client |
+| `PUT` | `/api/v1/clients/{id}` | Update a client |
+| `DELETE` | `/api/v1/clients/{id}` | Delete a client |
+
+### Invoices
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/invoices` | List invoices (paginated) |
+| `POST` | `/api/v1/invoices` | Create an invoice |
+| `GET` | `/api/v1/invoices/{id}` | Get an invoice |
+| `PUT` | `/api/v1/invoices/{id}` | Update an invoice |
+| `DELETE` | `/api/v1/invoices/{id}` | Delete an invoice |
+| `POST` | `/api/v1/invoices/{id}/send` | Send invoice + create Stripe payment link |
+| `POST` | `/api/v1/invoices/{id}/pay` | Mark invoice as paid (manual) |
+| `GET` | `/api/v1/invoices/{id}/download` | Download invoice PDF |
+
+### Dashboard
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/dashboard/stats` | Get dashboard statistics |
+
+### Webhooks (Public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/webhooks/stripe` | Stripe payment webhook |
+
+---
+
+## Invoice Workflow
+
+```
+Draft → Sent → Paid
+              ↑
+         Overdue (auto via Scheduler)
+```
+
+- **Draft** — editable, not visible to client
+- **Sent** — PDF generated, Stripe payment link created, email sent to client
+- **Paid** — payment confirmed via Stripe webhook, confirmation email sent
+- **Overdue** — automatically set by the scheduler when due date is passed
+
+---
+
+## Running Queues & Scheduler
 
 ```bash
-git clone https://github.com/billing-saas/billing-system-api
-cd billing-system-api
-
-composer install
-cp .env.example .env
-php artisan key:generate
-```
-
-Configure your database, then run:
-
-```powershell
-php artisan migrate
-```
-
-## Run the project
-
-```powershell
-## Start the Laravel server
-php artisan serve 
-
-## Run queue worker:
+# Process queued email jobs
 php artisan queue:work
 
-## Run scheduler locally:
-php artisan schedule:work
+# Run scheduled commands manually (for testing)
+php artisan invoices:check-overdue
+php artisan invoices:send-reminders
 ```
 
-The API will be available at:
+In production, configure a cron job to run the Laravel scheduler every minute:
 
 ```
-http://localhost:8000
+* * * * * php /path/to/artisan schedule:run
 ```
 
-## Notes
-This project depends on the external AaaS service being available before accessing protected endpoints.
+---
+
+## Testing Stripe Webhooks
+
+```bash
+# Install Stripe CLI and login
+stripe login
+
+# Forward webhooks to local server
+stripe listen --forward-to localhost:8000/api/v1/webhooks/stripe
+
+# Trigger a test payment
+stripe trigger checkout.session.completed
+```
