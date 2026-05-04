@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────
@@ -28,4 +29,7 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('invoices/{id}/pay',    [InvoiceController::class, 'markAsPaid']);
     Route::get('invoices/{id}/download',  [InvoiceController::class, 'download']);
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/profile',    [UserProfileController::class, 'show']);
+    Route::put('/profile',    [UserProfileController::class, 'update']);
+    Route::post('/user-profiles', [UserProfileController::class, 'store']);
 });
