@@ -1,66 +1,96 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Billing System API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern billing and invoicing backend built with Laravel.
 
-## About Laravel
+This API powers the billing platform with client management, invoice lifecycle handling, PDF generation, Stripe payments, email reminders, dashboard metrics, and external authentication.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Laravel
+- MySQL
+- Stripe
+- Laravel Scheduler
+- Laravel Queue
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Authentication
 
-## Learning Laravel
+Authentication is handled by an external Authentication-as-a-Service (AaaS).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The API validates access tokens against the external auth service and retrieves user identity and permissions before granting access.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+AaaS repository: https://github.com/patrick-rakotoharilalao/auth-service-project
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Features
 
-## Laravel Sponsors
+- Client management (CRUD)
+- Invoice management
+- Invoice status workflow (`draft`, `sent`, `paid`, `overdue`)
+- PDF invoice generation
+- Stripe Checkout payments
+- Stripe webhook reconciliation
+- Automated email reminders
+- Billing dashboard metrics
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Environment Variables
 
-### Premium Partners
+Add the following variables to your `.env` file in addition to Laravel's default configuration:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```env
+AAAS_URL=http://localhost:3001/api/v1
+X_API_KEY=
 
-## Contributing
+STRIPE_KEY=
+STRIPE_SECRET=
+STRIPE_WEBHOOK_SECRET=
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+FRONTEND_URL=http://localhost:3000
 
-## Code of Conduct
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=noreply@facturo.com
+MAIL_FROM_NAME="Facturo"
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+QUEUE_CONNECTION=database
+```
 
-## Security Vulnerabilities
+## Installation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+git clone https://github.com/billing-saas/billing-system-api
+cd billing-system-api
 
-## License
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Configure your database, then run:
+
+```powershell
+php artisan migrate
+```
+
+## Run the project
+
+```powershell
+## Start the Laravel server
+php artisan serve 
+
+## Run queue worker:
+php artisan queue:work
+
+## Run scheduler locally:
+php artisan schedule:work
+```
+
+The API will be available at:
+
+```
+http://localhost:8000
+```
+
+## Notes
+This project depends on the external AaaS service being available before accessing protected endpoints.
