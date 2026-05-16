@@ -128,7 +128,7 @@ class InvoiceService
 
     public function markAsPaidByWebhook(int $id): Invoice
     {
-        $invoice = Invoice::find($id);
+        $invoice = $this->invoiceRepository->getById($id);
 
         if (!$invoice) {
             throw new \Exception("Invoice {$id} not found.");
