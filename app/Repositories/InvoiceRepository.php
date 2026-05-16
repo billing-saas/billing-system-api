@@ -7,9 +7,20 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class InvoiceRepository
 {
+    protected Invoice $model;
+    public function __construct(Invoice $model)
+    {
+        $this->model = $model;
+    }
+
+    public function getById(int $id): ?Invoice
+    {
+        return $this->model->find($id);
+    }
+
     public function getAllByUser(string $userId, array $filters = []): LengthAwarePaginator
     {
-        $query = Invoice::where('user_id', $userId)
+        $query = $this->model->where('user_id', $userId)
             ->with(['client', 'items']);
 
         if (!empty($filters['status'])) {
@@ -47,7 +58,7 @@ class InvoiceRepository
 
     public function findByIdAndUser(int $id, string $userId): ?Invoice
     {
-        return Invoice::where('id', $id)
+        return $this->model->where('id', $id)
             ->where('user_id', $userId)
             ->with(['client', 'items'])
             ->first();
@@ -55,7 +66,7 @@ class InvoiceRepository
 
     public function create(array $data, array $items): Invoice
     {
-        $invoice = Invoice::create($data);
+        $invoice = $this->model->create($data);
         $this->syncItems($invoice, $items);
         return $invoice->load(['client', 'items']);
     }
@@ -82,7 +93,7 @@ class InvoiceRepository
 
     public function getOverdueInvoices(): \Illuminate\Database\Eloquent\Collection
     {
-        return Invoice::where('status', 'sent')
+        return $this->model->where('status', 'sent')
             ->whereDate('due_date', '<', now())
             ->get();
     }
